@@ -31,16 +31,16 @@ namespace DLList
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////
             Console.WriteLine();
-            Console.WriteLine("list.PopFront();");
-            list.PopFront();
+            int tmp = list.PopFront();
+            Console.WriteLine($"list.PopFront(); return {tmp}");
             foreach (var item in list)
             {
                 Console.Write($"{item} ");
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////
             Console.WriteLine();
-            Console.WriteLine("list.PopBack();");
-            list.PopBack();
+            tmp = list.PopBack();
+            Console.WriteLine($"list.PopBack(); return {tmp}");
             foreach (var item in list)
             {
                 Console.Write($"{item} ");

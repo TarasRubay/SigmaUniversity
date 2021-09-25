@@ -13,13 +13,14 @@ namespace DLList
         {
             class node
             {
-                public node(T data, node pPrev = null, node pNext = null)
+                public node(T data, node previous = null, node next = null)
                 {
                     this.data = data;
-                    this.pNext = pNext;
-                    this.pPrev = pPrev;
+                    pNext = next;
+                    pPrev = previous;
                 }
-                public T data { get; init; }
+               
+            public T data { get; init; }
                 public node pNext { get; set; }
                 public node pPrev { get; set; }
             }
@@ -54,14 +55,15 @@ namespace DLList
                 else
                 {
                     node tmp = first;
-                    first = new(data, pNext: first);
+                    first = new(data, next: first);
                     tmp.pPrev = first;
                     Length++;
                     currentNoda = first;
                 }
             }
-            public void PopFront()
+            public T PopFront() // return first<T> and delete first element
             {
+            T tmpData = first.data;
                 //тут в CLR зачишчати память та руйнувати обєкт не потрібно це зробить (збірник сміття)
                 if (first is not null && last is not null)
                     if (first.pPrev is null && first.pNext is null)
@@ -79,8 +81,30 @@ namespace DLList
                         currentNoda = first;
                         Length--;
                     }
+            return tmpData;
             }
-            public void PushBack(T data)
+        private void popFront() 
+        {
+            
+            if (first is not null && last is not null)
+                if (first.pPrev is null && first.pNext is null)
+                {
+                    first = null;
+                    last = first;
+                    currentNoda = first;
+                    Length--;
+                }
+                else
+                {
+
+                    first = first.pNext;
+                    first.pPrev = null;
+                    currentNoda = first;
+                    Length--;
+                }
+           
+        }
+        public void PushBack(T data)
             {
                 if (last is null)
                 {
@@ -92,18 +116,19 @@ namespace DLList
                 else
                 {
                     node tmp = last;
-                    last = new(data, pPrev: last);
+                    last = new(data, previous: last);
                     tmp.pNext = last;
                     Length++;
                     currentNoda = first;
                 }
             }
-            public void PopBack()
+            public T PopBack() // return last<T> and delete last element
             {
-                //тут в CLR зачишчати память та руйнувати обєкт не потрібно це зробить (збірник сміття)
+            //тут в CLR зачишчати память та руйнувати обєкт не потрібно це зробить (збірник сміття)
+                T tmpData = last.data; ;
                 if (first is not null && last is not null)
                     if (first.pPrev is null && first.pNext is null)
-                    {
+                    { 
                         last = null;
                         first = last;
                         currentNoda = first;
@@ -116,12 +141,31 @@ namespace DLList
                         currentNoda = first;
                         Length--;
                     }
+                 return tmpData;
             }
-            public void Remove(T data)
+        private void popBack() // delete last element
+        {
+            if (first is not null && last is not null)
+                if (first.pPrev is null && first.pNext is null)
+                {
+                    last = null;
+                    first = last;
+                    currentNoda = first;
+                    Length--;
+                }
+                else
+                {
+                    last = last.pPrev;
+                    last.pNext = null;
+                    currentNoda = first;
+                    Length--;
+                }
+        }
+        public void Remove(T data)
             {
                 node tmp = first;
-                if (first.data.Equals(data)) PopFront();
-                else if (data.Equals(last.data)) PopBack();
+                if (first.data.Equals(data)) popFront();
+                else if (data.Equals(last.data)) popBack();
                 else while (tmp.pNext != null)
                     {
                         if (tmp.data.Equals(data))
@@ -303,7 +347,7 @@ namespace DLList
                 }
                 while (first != null)
                 {
-                    PopBack();
+                    popBack();
                 }
             }
             IEnumerator IEnumerable.GetEnumerator()
