@@ -121,6 +121,10 @@ namespace ADO.NET
         public Student Create(Student student)
         {
             using SqlConnection connection = GetConnection();
+            var identity = 0;
+            try
+            {
+
             SqlCommand sqlCommand = new(
             $@"INSERT INTO Students
             (Name
@@ -144,7 +148,12 @@ namespace ADO.NET
             sqlCommand.Parameters.AddWithNullableValue("@Email", student.Email);
             sqlCommand.Parameters.AddWithNullableValue("@GitHubLink", student.GitHubLink);
             sqlCommand.Parameters.AddWithNullableValue("@Notes", student.Notes);
-            var identity = (int)sqlCommand.ExecuteScalar();
+            identity = (int)sqlCommand.ExecuteScalar();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             if (identity == 0)
                 return null;
             else
@@ -154,6 +163,10 @@ namespace ADO.NET
         public void Update(Student student)
         {
             using SqlConnection connection = GetConnection();
+            using SqlTransaction transaction = connection.BeginTransaction();
+            try
+            {
+
             SqlCommand sqlCommand = new(
             $@"update Students 
             set Name = @Name, BirthDate = @BirthDate, PhoneNumber = @PhoneNumber
@@ -167,7 +180,14 @@ namespace ADO.NET
             sqlCommand.Parameters.AddWithNullableValue("@GitHubLink", student.GitHubLink);
             sqlCommand.Parameters.AddWithNullableValue("@Notes", student.Notes);
             sqlCommand.ExecuteNonQuery();
-
+            SetStudentToCourses(student.Courses.Select(cours => cours.Id),student.Id,transaction);
+            transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                transaction.Rollback();
+            }
         }
 
         public void Remove(int id)
@@ -182,7 +202,8 @@ namespace ADO.NET
 
         private static void SetStudentToCourses(IEnumerable<int> coursesId, int studentId, SqlTransaction transaction)
         {
-            SqlCommand sqlCommand = new SqlCommand($@"DELETE FROM [dbo].[CourseStudent]
+            SqlCommand sqlCommand = new SqlCommand($@"
+            DELETE FROM [dbo].[CourseStudent]
             WHERE StudentsId = {studentId}", transaction.Connection, transaction);
             sqlCommand.ExecuteNonQuery();
             foreach (var courseId in coursesId)
