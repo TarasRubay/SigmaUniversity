@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 /// </summary>
 public class Worker
 {
+    private static Object locker = new();
     public class ExecutedTasks
     {
         public readonly List<Runnable> successful = new List<Runnable>();
@@ -42,7 +43,7 @@ public class Worker
         var cts = new CancellationTokenSource();
         cts.CancelAfter(timeout);
         var cancellationToken = cts.Token;
-
+        int counter = 1;
         foreach (var runnable in actions)
         {
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
@@ -54,8 +55,7 @@ public class Worker
             //TODO Add missing logic here.
             Task.Run(() =>
             {
-                lock (runnable)
-                {
+             
                 try
                 {
                     runnable.Run();
@@ -67,7 +67,10 @@ public class Worker
                     return;
                 }
                     taskCompletionSource.TrySetResult(null);
-                }
+                    Console.WriteLine($"task {counter++}; status {task.Status}");
+
+                
+                
             }
             , cancellationToken
              );
@@ -82,9 +85,12 @@ public class Worker
 
     private void ContinuationFunction(Task task, Runnable action, ExecutedTasks result)
     {
-        if (task.IsFaulted) result.failed.Add(action);
+        lock (locker)
+        {
+            if (task.IsFaulted) result.failed.Add(action);
         else if (task.IsCompletedSuccessfully) result.successful.Add(action);
         else if (task.IsCanceled) result.timedOut.Add(action);
+        }
     }
 }
 
@@ -116,10 +122,13 @@ public class Validator
         if (success)
         {
             Console.WriteLine("Congratulations, task completed!");
+            Console.WriteLine($"successful {result.successful.Count};failed {result.failed.Count};timedOut {result.timedOut.Count}");
         }
         else
         {
-            throw new Exception("Task Failed!");
+            //throw new Exception("Task Failed!");
+            Console.WriteLine("Task Failed!");
+            Console.WriteLine($"successful {result.successful.Count};failed {result.failed.Count};timedOut {result.timedOut.Count}");
         }
 
         Console.ReadLine();
