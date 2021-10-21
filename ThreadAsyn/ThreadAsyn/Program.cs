@@ -47,9 +47,30 @@ public class Worker
         {
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
             Task task = taskCompletionSource.Task;
-
+            cancellationToken.Register(() =>
+            {
+                taskCompletionSource.TrySetCanceled();
+            });
             //TODO Add missing logic here.
-            
+            Task.Run(() =>
+            {
+                lock (runnable)
+                {
+                try
+                {
+                    runnable.Run();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("exception");
+                    taskCompletionSource.SetException(e);
+                    return;
+                }
+                    taskCompletionSource.TrySetResult(null);
+                }
+            }
+            , cancellationToken
+             );
 
             var continueTask = task.ContinueWith(t => ContinuationFunction(t, runnable, result));
             continueTasks.Add(continueTask);
@@ -61,7 +82,9 @@ public class Worker
 
     private void ContinuationFunction(Task task, Runnable action, ExecutedTasks result)
     {
-        //TODO add logic here.
+        if (task.IsFaulted) result.failed.Add(action);
+        else if (task.IsCompletedSuccessfully) result.successful.Add(action);
+        else if (task.IsCanceled) result.timedOut.Add(action);
     }
 }
 
