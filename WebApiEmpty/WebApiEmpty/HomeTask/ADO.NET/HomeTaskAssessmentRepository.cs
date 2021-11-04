@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Models;
+using Models.Models;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using Models;
-using Models.Models;
+
 
 namespace ADO.NET
 {
