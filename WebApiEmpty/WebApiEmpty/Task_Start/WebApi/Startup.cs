@@ -30,14 +30,14 @@ namespace WebApi
 
             services.AddControllers();
             services.AddScoped<CourseService>();
-            //Write Add Scoped here HomeTaskServices
-            //Write Add Scoped here StudentServices
+            services.AddScoped<StudentService>();
+            services.AddScoped<HomeTaskService>();
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            services.AddScoped<IRepository<HomeTask>>(p => new HomeTaskRepository(connectionString));
             services.AddScoped<IRepository<Course>>(p => new CourseRepository(connectionString));
-            //Write Add Scoped here IRepository<Student>
-            //Write Add Scoped here IRepository<HomeTask>
-            //Write Add Scoped here IRepository<HomeTaskAssessment>
-           
+            services.AddScoped<IRepository<Student>>(p => new StudentRepository(connectionString));
+            services.AddScoped<IRepository<HomeTaskAssessment>>(p => new HomeTaskAssessmentRepository(connectionString));
+
         }
 
 
