@@ -1,4 +1,4 @@
-using ADO.NET;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using Models;
 using Models.Models;
 using Services;
+using WebApi.Controllers.Data;
+
 
 namespace WebApi
 {
@@ -32,15 +34,14 @@ namespace WebApi
             services.AddScoped<CourseService>();
             services.AddScoped<StudentService>();
             services.AddScoped<HomeTaskService>();
-            var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddScoped<IRepository<HomeTask>>(p => new HomeTaskRepository(connectionString));
-            services.AddScoped<IRepository<Course>>(p => new CourseRepository(connectionString));
-            services.AddScoped<IRepository<Student>>(p => new StudentRepository(connectionString));
-            services.AddScoped<IRepository<HomeTaskAssessment>>(p => new HomeTaskAssessmentRepository(connectionString));
+            services.Configure<TableOptions>(Configuration);
+
+            services.AddDbContext<TableContext>();
+            services.Add(ServiceDescriptor.Scoped(typeof(IRepository<>), typeof(TableRepositoryInterface<>)));
         }
 
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+       
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
