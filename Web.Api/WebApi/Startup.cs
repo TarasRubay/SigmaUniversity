@@ -8,8 +8,7 @@ using Microsoft.OpenApi.Models;
 using Models;
 using Models.Models;
 using Services;
-using WebApi.Controllers.Data;
-
+using DataContext;
 
 namespace WebApi
 {
